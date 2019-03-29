@@ -11,7 +11,7 @@ import androidx.work.PeriodicWorkRequest
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(),View.OnClickListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
 
     private var TAG: String = MainActivity::class.java.simpleName
@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     private lateinit var timeWorkRequest: OneTimeWorkRequest
     private lateinit var periodicWorkRequest: PeriodicWorkRequest
 
-    private  var PERIODIC_REQUEST_TAG:String="periodic_request"
+    private var PERIODIC_REQUEST_TAG: String = "periodic_request"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,28 +40,25 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
     private fun setupPeriodicWorker() {
 
-        val works = WorkManager.getInstance().getStatusesByTag(PERIODIC_REQUEST_TAG)
-
-        if (works.value != null && works.value?.isNotEmpty()!!) {
-            return
-        }
-
         val work = PeriodicWorkRequest.Builder(MyWorker::class.java, PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MINUTES, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.MINUTES)
         periodicWorkRequest = work.build()
 
-         workManager.enqueue(periodicWorkRequest)
+        workManager.enqueue(periodicWorkRequest)
 
     }
 
-    private fun requestPerodicWorkerSecondMethod(){
-        val statusesByTag = workManager.getStatusesByTag(PERIODIC_REQUEST_TAG)
-        if (statusesByTag == null || statusesByTag.value?.size == 0) {
 
-        } else {
-            for (i in 0 until statusesByTag.value?.size!!) {
-                Log.e("TAG", " perodic request id " + statusesByTag.value?.get(i)?.id + " Status " + statusesByTag.value?.get(i)?.state)
-            }
+    private fun isScheduleWork(tag: String): Boolean {
+        val statuses = workManager.getWorkInfosByTag(tag)
+        if (statuses.get().isEmpty()) return false
+        var running = false
+
+        for (state in statuses.get()) {
+
+            running = state.state == WorkInfo.State.RUNNING || state.state == WorkInfo.State.ENQUEUED
         }
+        return running
+
     }
 
 
@@ -69,9 +66,9 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
         if (view == btnstart) {
             setupOneTimeWorker()
         } else if (view == btnstop) {
+            !isScheduleWork(PERIODIC_REQUEST_TAG)
             setupPeriodicWorker()
-            // or
-           // requestPerodicWorkerSecondMethod()
+
         }
 
     }
