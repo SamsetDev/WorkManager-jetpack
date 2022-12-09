@@ -1,18 +1,16 @@
 package com.samset.workmanager
 
 import androidx.appcompat.app.AppCompatActivity
-
 import android.os.Bundle
-import android.util.Log
 import android.view.View
+import android.widget.Toast
+import androidx.lifecycle.Observer
 import androidx.work.*
-import java.util.concurrent.TimeUnit
-import androidx.work.PeriodicWorkRequest
+import com.samset.workmanager.work.MyWorkManager
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.TimeUnit
 
-
-class MainActivity : AppCompatActivity(), View.OnClickListener {
-
+class MainActivity : AppCompatActivity(), View.OnClickListener  {
 
     private var TAG: String = MainActivity::class.java.simpleName
 
@@ -25,7 +23,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         workManager = WorkManager.getInstance()!!
         btnstart.setOnClickListener(this)
         btnstop.setOnClickListener(this)
@@ -34,13 +31,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setupOneTimeWorker() {
-        timeWorkRequest = OneTimeWorkRequest.Builder(MyWorker::class.java)?.build()
+        timeWorkRequest = OneTimeWorkRequest.Builder(MyWorkManager::class.java).build()
         workManager.enqueue(timeWorkRequest)
     }
 
     private fun setupPeriodicWorker() {
 
-        val work = PeriodicWorkRequest.Builder(MyWorker::class.java, PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MINUTES, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.MINUTES)
+        val work = PeriodicWorkRequest.Builder(MyWorkManager::class.java, PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MINUTES, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.MINUTES)
         periodicWorkRequest = work.build()
 
         workManager.enqueue(periodicWorkRequest)
